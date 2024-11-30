@@ -24,8 +24,10 @@ import game.model.Currency;
 
 public class Driver {
     public static void main(String[] args) {
+        /* 
         try {
             // Initialize DAOs
+            
             PlayerDao playerDao = PlayerDao.getInstance();
             ItemDao itemDao = ItemDao.getInstance();
             WeaponDao weaponDao = WeaponDao.getInstance();
@@ -111,8 +113,10 @@ public class Driver {
             playerDao.delete(player);
             System.out.println("Cleanup complete");
             
+            
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        */
     }
 } 

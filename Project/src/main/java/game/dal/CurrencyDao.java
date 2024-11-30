@@ -6,149 +6,195 @@ import java.util.List;
 import game.model.Currency;
 
 public class CurrencyDao {
-    private ConnectionManager connectionManager;
+    protected ConnectionManager connectionManager;
+
     private static CurrencyDao instance = null;
-    
-    private CurrencyDao() {
+
+    protected CurrencyDao() {
         connectionManager = new ConnectionManager();
     }
+
     public static CurrencyDao getInstance() {
-		if(instance == null) {
-			instance = new CurrencyDao();
-		}
-		return instance;
-	}
-    
-    
-    // Create
+        if (instance == null) {
+            instance = new CurrencyDao();
+        }
+        return instance;
+    }
+
+    // Create a new Currency
     public Currency create(Currency currency) throws SQLException {
-        String insertSql = "INSERT INTO Currency(currency_name, cap, isContinued) VALUES(?,?,?);";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+        String insertCurrency = "INSERT INTO Currency(currency_name, cap, isContinued) VALUES(?, ?, ?);";
+        Connection connection = null;
+        PreparedStatement insertStmt = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(insertSql);
-            pstmt.setString(1, currency.getCurrencyName());
-            pstmt.setInt(2, currency.getCap());
-            pstmt.setBoolean(3, currency.getIsContinued());
-            pstmt.executeUpdate();
+            connection = connectionManager.getConnection();
+            insertStmt = connection.prepareStatement(insertCurrency);
+            insertStmt.setString(1, currency.getCurrencyName());
+            insertStmt.setInt(2, currency.getCap());
+            insertStmt.setBoolean(3, currency.isContinued());
+            insertStmt.executeUpdate();
             return currency;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
-        }
-    }
-    
-    // Read by primary key
-    public Currency getCurrencyByName(String currencyName) throws SQLException {
-        String selectSql = "SELECT currency_name, cap, isContinued FROM Currency WHERE currency_name=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            pstmt.setString(1, currencyName);
-            rs = pstmt.executeQuery();
-            if(rs.next()) {
-                return new Currency(
-                    rs.getString("currency_name"),
-                    rs.getInt("cap"),
-                    rs.getBoolean("isContinued")
-                );
+            if (connection != null) {
+                connection.close();
             }
-            return null;
-        } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
-        }
-    }
-    
-    // Get all active currencies
-    public List<Currency> getActiveCurrencies() throws SQLException {
-        List<Currency> currencies = new ArrayList<>();
-        String selectSql = "SELECT currency_name, cap, isContinued FROM Currency WHERE isContinued=TRUE;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            rs = pstmt.executeQuery();
-            while(rs.next()) {
-                currencies.add(new Currency(
-                    rs.getString("currency_name"),
-                    rs.getInt("cap"),
-                    rs.getBoolean("isContinued")
-                ));
+            if (insertStmt != null) {
+                insertStmt.close();
             }
-            return currencies;
-        } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
-        }
-    }
-    
-    // Get all currencies
-    public List<Currency> getCurrencies() throws SQLException {
-        List<Currency> currencies = new ArrayList<>();
-        String selectSql = "SELECT currency_name, cap, isContinued FROM Currency;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            rs = pstmt.executeQuery();
-            while(rs.next()) {
-                currencies.add(new Currency(
-                    rs.getString("currency_name"),
-                    rs.getInt("cap"),
-                    rs.getBoolean("isContinued")
-                ));
-            }
-            return currencies;
-        } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
         }
     }
 
-    // Update cap
-    public Currency updateCap(Currency currency, int newCap) throws SQLException {
-        String updateSql = "UPDATE Currency SET cap=? WHERE currency_name=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+    // Retrieve a Currency by currency_name
+    public Currency getCurrencyByName(String currencyName) throws SQLException {
+        String selectCurrency = "SELECT currency_name, cap, isContinued FROM Currency WHERE currency_name = ?;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(updateSql);
-            pstmt.setInt(1, newCap);
-            pstmt.setString(2, currency.getCurrencyName());
-            pstmt.executeUpdate();
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectCurrency);
+            selectStmt.setString(1, currencyName);
+            results = selectStmt.executeQuery();
+            if (results.next()) {
+                String resultCurrencyName = results.getString("currency_name");
+                int cap = results.getInt("cap");
+                boolean isContinued = results.getBoolean("isContinued");
+                return new Currency(resultCurrencyName, cap, isContinued);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+            if (selectStmt != null) {
+                selectStmt.close();
+            }
+            if (results != null) {
+                results.close();
+            }
+        }
+        return null;
+    }
+
+    // Retrieve all active Currencies
+    public List<Currency> getActiveCurrencies() throws SQLException {
+        List<Currency> currencies = new ArrayList<>();
+        String selectCurrencies = "SELECT currency_name, cap, isContinued FROM Currency WHERE isContinued = TRUE;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
+        try {
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectCurrencies);
+            results = selectStmt.executeQuery();
+            while (results.next()) {
+                String currencyName = results.getString("currency_name");
+                int cap = results.getInt("cap");
+                boolean isContinued = results.getBoolean("isContinued");
+                currencies.add(new Currency(currencyName, cap, isContinued));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+            if (selectStmt != null) {
+                selectStmt.close();
+            }
+            if (results != null) {
+                results.close();
+            }
+        }
+        return currencies;
+    }
+
+    public List<Currency> getCurrencies() throws SQLException {
+        List<Currency> currencies = new ArrayList<>();
+        String selectCurrencies = "SELECT currency_name, cap, isContinued FROM Currency;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
+        try {
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectCurrencies);
+            results = selectStmt.executeQuery();
+            while (results.next()) {
+                String currencyName = results.getString("currency_name");
+                int cap = results.getInt("cap");
+                boolean isContinued = results.getBoolean("isContinued");
+                currencies.add(new Currency(currencyName, cap, isContinued));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+            if (selectStmt != null) {
+                selectStmt.close();
+            }
+            if (results != null) {
+                results.close();
+            }
+        }
+        return currencies;
+    }
+
+    // Update the cap for a Currency
+    public Currency updateCap(Currency currency, int newCap) throws SQLException {
+        String updateCurrency = "UPDATE Currency SET cap = ? WHERE currency_name = ?;";
+        Connection connection = null;
+        PreparedStatement updateStmt = null;
+        try {
+            connection = connectionManager.getConnection();
+            updateStmt = connection.prepareStatement(updateCurrency);
+            updateStmt.setInt(1, newCap);
+            updateStmt.setString(2, currency.getCurrencyName());
+            updateStmt.executeUpdate();
             currency.setCap(newCap);
             return currency;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) {
+                connection.close();
+            }
+            if (updateStmt != null) {
+                updateStmt.close();
+            }
         }
     }
-    
-    // Delete
-    public void delete(Currency currency) throws SQLException {
-        String deleteSql = "DELETE FROM Currency WHERE currency_name=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+
+    // Delete a Currency
+    public Currency delete(Currency currency) throws SQLException {
+        String deleteCurrency = "DELETE FROM Currency WHERE currency_name = ?;";
+        Connection connection = null;
+        PreparedStatement deleteStmt = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(deleteSql);
-            pstmt.setString(1, currency.getCurrencyName());
-            pstmt.executeUpdate();
+            connection = connectionManager.getConnection();
+            deleteStmt = connection.prepareStatement(deleteCurrency);
+            deleteStmt.setString(1, currency.getCurrencyName());
+            deleteStmt.executeUpdate();
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) {
+                connection.close();
+            }
+            if (deleteStmt != null) {
+                deleteStmt.close();
+            }
         }
     }
-} 
+}

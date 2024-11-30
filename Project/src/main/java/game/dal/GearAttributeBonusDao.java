@@ -1,42 +1,41 @@
 package game.dal;
 
 import game.model.Gear;
+import game.model.GearAttributeBonus;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GearDao {
+public class GearAttributeBonusDao {
     protected ConnectionManager connectionManager;
 
-    private static GearDao instance = null;
+    private static GearAttributeBonusDao instance = null;
 
-    protected GearDao() {
+    protected GearAttributeBonusDao() {
         connectionManager = new ConnectionManager();
     }
 
-    public static GearDao getInstance() {
+    public static GearAttributeBonusDao getInstance() {
         if (instance == null) {
-            instance = new GearDao();
+            instance = new GearAttributeBonusDao();
         }
         return instance;
     }
 
-    // Create a new Gear
-    public Gear create(Gear gear) throws SQLException {
-        String insertGear = "INSERT INTO Gear(item_id, equipped_slot, required_level, defense_rating, magic_defense_rating) VALUES(?, ?, ?, ?, ?);";
+    // Create a new GearAttributeBonus
+    public GearAttributeBonus create(GearAttributeBonus bonus) throws SQLException {
+        String insertBonus = "INSERT INTO GearAttributeBonus(item_id, attribute, bonus_value) VALUES(?, ?, ?);";
         Connection connection = null;
         PreparedStatement insertStmt = null;
         try {
             connection = connectionManager.getConnection();
-            insertStmt = connection.prepareStatement(insertGear);
-            insertStmt.setInt(1, gear.getItemId());
-            insertStmt.setString(2, gear.getEquippedSlot());
-            insertStmt.setInt(3, gear.getRequiredLevel());
-            insertStmt.setInt(4, gear.getDefenseRating());
-            insertStmt.setInt(5, gear.getMagicDefenseRating());
+            insertStmt = connection.prepareStatement(insertBonus);
+            insertStmt.setInt(1, bonus.getGear().getItemId());
+            insertStmt.setString(2, bonus.getAttribute());
+            insertStmt.setInt(3, bonus.getBonusValue());
             insertStmt.executeUpdate();
-            return gear;
+            return bonus;
         } catch (SQLException e) {
             e.printStackTrace();
             throw e;
@@ -50,23 +49,23 @@ public class GearDao {
         }
     }
 
-    // Retrieve a Gear by item_id
-    public Gear getGearByItemId(int itemId) throws SQLException {
-        String selectGear = "SELECT item_id, equipped_slot, required_level, defense_rating, magic_defense_rating FROM Gear WHERE item_id = ?;";
+    // Retrieve a GearAttributeBonus by item_id and attribute
+    public GearAttributeBonus getGearAttributeBonus(int itemId, String attribute) throws SQLException {
+        String selectBonus = "SELECT item_id, attribute, bonus_value FROM GearAttributeBonus WHERE item_id = ? AND attribute = ?;";
         Connection connection = null;
         PreparedStatement selectStmt = null;
         ResultSet results = null;
         try {
             connection = connectionManager.getConnection();
-            selectStmt = connection.prepareStatement(selectGear);
+            selectStmt = connection.prepareStatement(selectBonus);
             selectStmt.setInt(1, itemId);
+            selectStmt.setString(2, attribute);
             results = selectStmt.executeQuery();
             if (results.next()) {
-                String equippedSlot = results.getString("equipped_slot");
-                int requiredLevel = results.getInt("required_level");
-                int defenseRating = results.getInt("defense_rating");
-                int magicDefenseRating = results.getInt("magic_defense_rating");
-                return new Gear(itemId, equippedSlot, requiredLevel, defenseRating, magicDefenseRating, null);
+                int bonusValue = results.getInt("bonus_value");
+                GearDao gearDao = GearDao.getInstance();
+                Gear gear = gearDao.getGearByItemId(itemId);
+                return new GearAttributeBonus(gear, attribute, bonusValue);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -85,24 +84,24 @@ public class GearDao {
         return null;
     }
 
-    // Retrieve all Gear
-    public List<Gear> getAllGear() throws SQLException {
-        List<Gear> gearList = new ArrayList<>();
-        String selectGear = "SELECT item_id, equipped_slot, required_level, defense_rating, magic_defense_rating FROM Gear;";
+    // Retrieve all GearAttributeBonus records for a specific item_id
+    public List<GearAttributeBonus> getGearAttributeBonusesByItemId(int itemId) throws SQLException {
+        List<GearAttributeBonus> bonuses = new ArrayList<>();
+        String selectBonuses = "SELECT item_id, attribute, bonus_value FROM GearAttributeBonus WHERE item_id = ?;";
         Connection connection = null;
         PreparedStatement selectStmt = null;
         ResultSet results = null;
         try {
             connection = connectionManager.getConnection();
-            selectStmt = connection.prepareStatement(selectGear);
+            selectStmt = connection.prepareStatement(selectBonuses);
+            selectStmt.setInt(1, itemId);
             results = selectStmt.executeQuery();
+            GearDao gearDao = GearDao.getInstance();
+            Gear gear = gearDao.getGearByItemId(itemId);
             while (results.next()) {
-                int itemId = results.getInt("item_id");
-                String equippedSlot = results.getString("equipped_slot");
-                int requiredLevel = results.getInt("required_level");
-                int defenseRating = results.getInt("defense_rating");
-                int magicDefenseRating = results.getInt("magic_defense_rating");
-                gearList.add(new Gear(itemId, equippedSlot, requiredLevel, defenseRating, magicDefenseRating, null));
+                String attribute = results.getString("attribute");
+                int bonusValue = results.getInt("bonus_value");
+                bonuses.add(new GearAttributeBonus(gear, attribute, bonusValue));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -118,18 +117,19 @@ public class GearDao {
                 results.close();
             }
         }
-        return gearList;
+        return bonuses;
     }
 
-    // Delete a Gear
-    public Gear delete(Gear gear) throws SQLException {
-        String deleteGear = "DELETE FROM Gear WHERE item_id = ?;";
+    // Delete a GearAttributeBonus by item_id and attribute
+    public GearAttributeBonus delete(GearAttributeBonus bonus) throws SQLException {
+        String deleteBonus = "DELETE FROM GearAttributeBonus WHERE item_id = ? AND attribute = ?;";
         Connection connection = null;
         PreparedStatement deleteStmt = null;
         try {
             connection = connectionManager.getConnection();
-            deleteStmt = connection.prepareStatement(deleteGear);
-            deleteStmt.setInt(1, gear.getItemId());
+            deleteStmt = connection.prepareStatement(deleteBonus);
+            deleteStmt.setInt(1, bonus.getGear().getItemId());
+            deleteStmt.setString(2, bonus.getAttribute());
             deleteStmt.executeUpdate();
             return null;
         } catch (SQLException e) {

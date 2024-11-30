@@ -14,6 +14,7 @@ public class AttributeDao {
 		connectionManager = new ConnectionManager();
 		characterDao = CharacterDao.getInstance();
 	}
+    
 	public static AttributeDao getInstance() {
 		if(instance == null) {
 			instance = new AttributeDao();

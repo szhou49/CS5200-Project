@@ -5,8 +5,10 @@ public class EquippedSlot {
     private Character character;
     private Gear gear;
     
-    public EquippedSlot(Slot slot) {
+    public EquippedSlot(Slot slot, Character character, Gear gear) {
         this.slot = slot;
+        this.character = character;
+        this.gear = gear;
     }
     
     // Getters and setters

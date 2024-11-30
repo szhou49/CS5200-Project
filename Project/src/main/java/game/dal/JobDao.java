@@ -5,94 +5,132 @@ import java.util.List;
 
 import game.model.Job;
 
+
 public class JobDao {
-    private ConnectionManager connectionManager;
+    protected ConnectionManager connectionManager;
+
     private static JobDao instance = null;
-    
-    private JobDao() {
+
+    protected JobDao() {
         connectionManager = new ConnectionManager();
     }
+
     public static JobDao getInstance() {
-		if(instance == null) {
-			instance = new JobDao();
-		}
-		return instance;	
-	}
-    
-    // Create
+        if (instance == null) {
+            instance = new JobDao();
+        }
+        return instance;
+    }
+
+    // Create a new Job
     public Job create(Job job) throws SQLException {
-        String insertSql = "INSERT INTO Job(job_name) VALUES(?);";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+        String insertJob = "INSERT INTO Job(job_name) VALUES(?);";
+        Connection connection = null;
+        PreparedStatement insertStmt = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(insertSql);
-            pstmt.setString(1, job.getJobName());
-            pstmt.executeUpdate();
+            connection = connectionManager.getConnection();
+            insertStmt = connection.prepareStatement(insertJob);
+            insertStmt.setString(1, job.getJobName());
+            insertStmt.executeUpdate();
             return job;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
-        }
-    }
-    
-    // Read by primary key
-    public Job getJobByName(String jobName) throws SQLException {
-        String selectSql = "SELECT job_name FROM Job WHERE job_name=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            pstmt.setString(1, jobName);
-            rs = pstmt.executeQuery();
-            if(rs.next()) {
-                return new Job(rs.getString("job_name"));
+            if (connection != null) {
+                connection.close();
             }
-            return null;
-        } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (insertStmt != null) {
+                insertStmt.close();
+            }
         }
     }
-    
-    // Get all jobs
+
+    // Retrieve a Job by jobName
+    public Job getJobByName(String jobName) throws SQLException {
+        String selectJob = "SELECT job_name FROM Job WHERE job_name = ?;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
+        try {
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectJob);
+            selectStmt.setString(1, jobName);
+            results = selectStmt.executeQuery();
+            if (results.next()) {
+                String resultJobName = results.getString("job_name");
+                return new Job(resultJobName);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+            if (selectStmt != null) {
+                selectStmt.close();
+            }
+            if (results != null) {
+                results.close();
+            }
+        }
+        return null;
+    }
+
+    // Retrieve all Jobs
     public List<Job> getAllJobs() throws SQLException {
         List<Job> jobs = new ArrayList<>();
-        String selectSql = "SELECT job_name FROM Job;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        String selectJobs = "SELECT job_name FROM Job;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            rs = pstmt.executeQuery();
-            while(rs.next()) {
-                jobs.add(new Job(rs.getString("job_name")));
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectJobs);
+            results = selectStmt.executeQuery();
+            while (results.next()) {
+                String jobName = results.getString("job_name");
+                jobs.add(new Job(jobName));
             }
-            return jobs;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) {
+                connection.close();
+            }
+            if (selectStmt != null) {
+                selectStmt.close();
+            }
+            if (results != null) {
+                results.close();
+            }
         }
+        return jobs;
     }
-    
-    // Delete
-    public void delete(Job job) throws SQLException {
-        String deleteSql = "DELETE FROM Job WHERE job_name=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+
+    // Delete a Job
+    public Job delete(Job job) throws SQLException {
+        String deleteJob = "DELETE FROM Job WHERE job_name = ?;";
+        Connection connection = null;
+        PreparedStatement deleteStmt = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(deleteSql);
-            pstmt.setString(1, job.getJobName());
-            pstmt.executeUpdate();
+            connection = connectionManager.getConnection();
+            deleteStmt = connection.prepareStatement(deleteJob);
+            deleteStmt.setString(1, job.getJobName());
+            deleteStmt.executeUpdate();
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) {
+                connection.close();
+            }
+            if (deleteStmt != null) {
+                deleteStmt.close();
+            }
         }
     }
-} 
+}

@@ -1,11 +1,11 @@
 package game.model;
 
-public class ConsumableBonus {
+public class ConsumableAttributeBonus {
     private Consumable consumable;
     private String attribute;
     private int bonusValue;
 
-    public ConsumableBonus(Consumable consumable, String attribute, int bonusValue) {
+    public ConsumableAttributeBonus(Consumable consumable, String attribute, int bonusValue) {
         this.consumable = consumable;
         this.attribute = attribute;
         this.bonusValue = bonusValue;
