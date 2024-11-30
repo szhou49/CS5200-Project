@@ -1,4 +1,4 @@
-package game.servlet;
+package game.servlet.GET;
 
 import game.dal.PlayerDao;
 import game.model.Player;
@@ -15,13 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * PlayerGet is the primary entry point into the application for retrieving player data.
- *
- * This servlet handles both GET and POST requests to search for players by partial name.
- */
-@WebServlet("/playerget")
-public class PlayerGet extends HttpServlet {
+@WebServlet("/playergetbypartialname")
+public class PlayerGetByPartialName extends HttpServlet {
 
     protected PlayerDao playerDao;
 
@@ -57,7 +52,7 @@ public class PlayerGet extends HttpServlet {
         }
         req.setAttribute("players", players);
 
-        req.getRequestDispatcher("/PlayerGet.jsp").forward(req, resp);
+        req.getRequestDispatcher("/PlayerGetByPartialName.jsp").forward(req, resp);
     }
 
     @Override
@@ -85,6 +80,6 @@ public class PlayerGet extends HttpServlet {
         }
         req.setAttribute("players", players);
 
-        req.getRequestDispatcher("/PlayerGet.jsp").forward(req, resp);
+        req.getRequestDispatcher("/PlayerGetByPartialName.jsp").forward(req, resp);
     }
 }
