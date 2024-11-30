@@ -3,12 +3,14 @@ package game.model;
 public class ConsumableAttributeBonus {
     private Consumable consumable;
     private String attribute;
-    private int bonusValue;
+    private double percentage_value;
+    private int maximumCap;
 
-    public ConsumableAttributeBonus(Consumable consumable, String attribute, int bonusValue) {
+    public ConsumableAttributeBonus(Consumable consumable, String attribute, double percentage_value, int maximumCap) {
         this.consumable = consumable;
         this.attribute = attribute;
-        this.bonusValue = bonusValue;
+        this.percentage_value = percentage_value;
+        this.maximumCap = maximumCap;
     }
 
     public Consumable getConsumable() {
@@ -27,11 +29,19 @@ public class ConsumableAttributeBonus {
         this.attribute = attribute;
     }
 
-    public int getBonusValue() {
-        return bonusValue;
+    public double getPercentage_value() {
+        return percentage_value;
     }
 
-    public void setBonusValue(int bonusValue) {
-        this.bonusValue = bonusValue;
+    public void setPercentage_value(double percentage_value) {
+        this.percentage_value = percentage_value;
+    }
+
+    public int getMaximumCap() {
+        return maximumCap;
+    }
+
+    public void setMaximumCap(int maximumCap) {
+        this.maximumCap = maximumCap;
     }
 }

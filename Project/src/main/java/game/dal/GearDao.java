@@ -36,6 +36,7 @@ public class GearDao {
             insertStmt.setInt(4, gear.getDefenseRating());
             insertStmt.setInt(5, gear.getMagicDefenseRating());
             insertStmt.executeUpdate();
+            ItemDao.getInstance().create(gear);
             return gear;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -66,7 +67,7 @@ public class GearDao {
                 int requiredLevel = results.getInt("required_level");
                 int defenseRating = results.getInt("defense_rating");
                 int magicDefenseRating = results.getInt("magic_defense_rating");
-                return new Gear(itemId, equippedSlot, requiredLevel, defenseRating, magicDefenseRating, null);
+                return new Gear(ItemDao.getInstance().getItemById(itemId), equippedSlot, requiredLevel, defenseRating, magicDefenseRating);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -102,7 +103,7 @@ public class GearDao {
                 int requiredLevel = results.getInt("required_level");
                 int defenseRating = results.getInt("defense_rating");
                 int magicDefenseRating = results.getInt("magic_defense_rating");
-                gearList.add(new Gear(itemId, equippedSlot, requiredLevel, defenseRating, magicDefenseRating, null));
+                gearList.add(new Gear(ItemDao.getInstance().getItemById(itemId), equippedSlot, requiredLevel, defenseRating, magicDefenseRating));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -131,6 +132,7 @@ public class GearDao {
             deleteStmt = connection.prepareStatement(deleteGear);
             deleteStmt.setInt(1, gear.getItemId());
             deleteStmt.executeUpdate();
+            ItemDao.getInstance().delete(gear);
             return null;
         } catch (SQLException e) {
             e.printStackTrace();

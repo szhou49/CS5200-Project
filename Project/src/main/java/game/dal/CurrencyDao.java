@@ -115,7 +115,7 @@ public class CurrencyDao {
         return currencies;
     }
 
-    public List<Currency> getCurrencies() throws SQLException {
+    public List<Currency> getAllCurrencies() throws SQLException {
         List<Currency> currencies = new ArrayList<>();
         String selectCurrencies = "SELECT currency_name, cap, isContinued FROM Currency;";
         Connection connection = null;

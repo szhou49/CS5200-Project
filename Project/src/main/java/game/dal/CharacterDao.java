@@ -3,6 +3,7 @@ package game.dal;
 import game.model.Character;
 import game.model.Player;
 import game.model.Weapon;
+import game.model.Attribute;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -138,6 +139,8 @@ public class CharacterDao {
             deleteStmt = connection.prepareStatement(deleteCharacter);
             deleteStmt.setInt(1, character.getCharacterId());
             deleteStmt.executeUpdate();
+            Attribute attribute = AttributeDao.getInstance().getAttributeByCharacterId(character.getCharacterId());
+            AttributeDao.getInstance().delete(attribute);
             return null;
         } catch (SQLException e) {
             e.printStackTrace();

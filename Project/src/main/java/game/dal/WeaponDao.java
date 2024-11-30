@@ -1,6 +1,5 @@
 package game.dal;
 
-import game.model.Item;
 import game.model.Weapon;
 
 import java.sql.*;
@@ -37,6 +36,7 @@ public class WeaponDao {
             insertStmt.setDouble(4, weapon.getAutoAttack());
             insertStmt.setDouble(5, weapon.getAttackDelay());
             insertStmt.executeUpdate();
+            ItemDao.getInstance().create(weapon);
             return weapon;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -67,9 +67,7 @@ public class WeaponDao {
                 int damage = results.getInt("damage");
                 double autoAttack = results.getDouble("auto_attack");
                 double attackDelay = results.getDouble("attack_delay");
-                ItemDao itemDao = ItemDao.getInstance();
-                Item item = itemDao.getItemById(itemId);
-                return new Weapon(itemId, requiredLevel, damage, autoAttack, attackDelay, item);
+                return new Weapon(ItemDao.getInstance().getItemById(itemId), requiredLevel, damage, autoAttack, attackDelay);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -99,15 +97,13 @@ public class WeaponDao {
             connection = connectionManager.getConnection();
             selectStmt = connection.prepareStatement(selectWeapons);
             results = selectStmt.executeQuery();
-            ItemDao itemDao = ItemDao.getInstance();
             while (results.next()) {
                 int itemId = results.getInt("item_id");
                 int requiredLevel = results.getInt("required_level");
                 int damage = results.getInt("damage");
                 double autoAttack = results.getDouble("auto_attack");
                 double attackDelay = results.getDouble("attack_delay");
-                Item item = itemDao.getItemById(itemId);
-                weapons.add(new Weapon(itemId, requiredLevel, damage, autoAttack, attackDelay, item));
+                weapons.add(new Weapon(ItemDao.getInstance().getItemById(itemId), requiredLevel, damage, autoAttack, attackDelay));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -136,6 +132,7 @@ public class WeaponDao {
             deleteStmt = connection.prepareStatement(deleteWeapon);
             deleteStmt.setInt(1, weapon.getItemId());
             deleteStmt.executeUpdate();
+            ItemDao.getInstance().delete(weapon);
             return null;
         } catch (SQLException e) {
             e.printStackTrace();

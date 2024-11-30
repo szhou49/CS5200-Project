@@ -1,7 +1,6 @@
 package game.dal;
 
 import game.model.Consumable;
-import game.model.Item;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -34,6 +33,7 @@ public class ConsumableDao {
             insertStmt.setInt(1, consumable.getItemId());
             insertStmt.setString(2, consumable.getItemDescription());
             insertStmt.executeUpdate();
+            ItemDao.getInstance().create(consumable);
             return consumable;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -61,9 +61,7 @@ public class ConsumableDao {
             results = selectStmt.executeQuery();
             if (results.next()) {
                 String itemDescription = results.getString("item_description");
-                ItemDao itemDao = ItemDao.getInstance();
-                Item item = itemDao.getItemById(itemId);
-                return new Consumable(itemId, itemDescription, item);
+                return new Consumable(ItemDao.getInstance().getItemById(itemId), itemDescription);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -93,12 +91,10 @@ public class ConsumableDao {
             connection = connectionManager.getConnection();
             selectStmt = connection.prepareStatement(selectConsumables);
             results = selectStmt.executeQuery();
-            ItemDao itemDao = ItemDao.getInstance();
             while (results.next()) {
                 int itemId = results.getInt("item_id");
                 String itemDescription = results.getString("item_description");
-                Item item = itemDao.getItemById(itemId);
-                consumables.add(new Consumable(itemId, itemDescription, item));
+                consumables.add(new Consumable(ItemDao.getInstance().getItemById(itemId), itemDescription));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -127,6 +123,7 @@ public class ConsumableDao {
             deleteStmt = connection.prepareStatement(deleteConsumable);
             deleteStmt.setInt(1, consumable.getItemId());
             deleteStmt.executeUpdate();
+            ItemDao.getInstance().delete(consumable);
             return null;
         } catch (SQLException e) {
             e.printStackTrace();

@@ -96,7 +96,7 @@ public class PlayerDao {
     }
 
     // Get all players
-    public List<Player> getPlayers() throws SQLException {
+    public List<Player> getAllPlayers() throws SQLException {
         List<Player> players = new ArrayList<>();
         String selectSql = "SELECT email_address, player_name FROM Player;";
         Connection conn = null;

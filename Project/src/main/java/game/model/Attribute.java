@@ -2,7 +2,6 @@ package game.model;
 
 
 public class Attribute {
-    private int characterId;
     private int strength;
     private int dexterity;
     private int vitality;
@@ -21,41 +20,31 @@ public class Attribute {
     private int averageItemLevel;
     private int tenacity;
     private int piety;
-    
     private Character character;  // Reference to the parent Character
-    
-    public Attribute(int characterId, int strength, int dexterity, int vitality, 
-                    int intelligence, int mind, int criticalHit, int determination, 
-                    int directHitRate, int defense, int magicalDefense, int attackPower, 
-                    int skillSpeed, int attackMagicPotency, int healingMagicPotency, 
-                    int spellSpeed, int averageItemLevel, int tenacity, int piety) {
-        this.characterId = characterId;
-        this.strength = strength;
-        this.dexterity = dexterity;
-        this.vitality = vitality;
-        this.intelligence = intelligence;
-        this.mind = mind;
-        this.criticalHit = criticalHit;
-        this.determination = determination;
-        this.directHitRate = directHitRate;
-        this.defense = defense;
-        this.magicalDefense = magicalDefense;
-        this.attackPower = attackPower;
-        this.skillSpeed = skillSpeed;
-        this.attackMagicPotency = attackMagicPotency;
-        this.healingMagicPotency = healingMagicPotency;
-        this.spellSpeed = spellSpeed;
-        this.averageItemLevel = averageItemLevel;
-        this.tenacity = tenacity;
-        this.piety = piety;
-    }
 
-	public int getCharacterId() {
-		return characterId;
-	}
-
-	public void setCharacterId(int characterId) {
-		this.characterId = characterId;
+	public Attribute(int strength, int dexterity, int vitality, int intelligence, int mind,
+			int criticalHit, int determination, int directHitRate, int defense, int magicalDefense, int attackPower,
+			int skillSpeed, int attackMagicPotency, int healingMagicPotency, int spellSpeed, int averageItemLevel,
+			int tenacity, int piety, Character character) {
+		this.strength = strength;
+		this.dexterity = dexterity;
+		this.vitality = vitality;
+		this.intelligence = intelligence;
+		this.mind = mind;
+		this.criticalHit = criticalHit;
+		this.determination = determination;
+		this.directHitRate = directHitRate;
+		this.defense = defense;
+		this.magicalDefense = magicalDefense;
+		this.attackPower = attackPower;
+		this.skillSpeed = skillSpeed;
+		this.attackMagicPotency = attackMagicPotency;
+		this.healingMagicPotency = healingMagicPotency;
+		this.spellSpeed = spellSpeed;
+		this.averageItemLevel = averageItemLevel;
+		this.tenacity = tenacity;
+		this.piety = piety;
+		this.character = character;
 	}
 
 	public int getStrength() {
@@ -209,5 +198,4 @@ public class Attribute {
 	public void setCharacter(Character character) {
 		this.character = character;
 	}
-    
 } 

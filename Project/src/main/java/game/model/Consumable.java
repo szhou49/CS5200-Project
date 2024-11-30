@@ -1,22 +1,17 @@
 package game.model;
 
-public class Consumable {
-    private int itemId;
+public class Consumable extends Item{
     private String itemDescription;
-    private Item item;
 
-    public Consumable(int itemId, String itemDescription, Item item) {
-        this.itemId = itemId;
+    public Consumable(int itemId, String itemName, int stackSize, int vendorPrice, int itemLevel, 
+                      String itemDescription) {
+        super(itemId, itemName, stackSize, vendorPrice, itemLevel);
         this.itemDescription = itemDescription;
-        this.item = item;
     }
 
-    public int getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(int itemId) {
-        this.itemId = itemId;
+    public Consumable(Item item, String itemDescription) {
+        super(item.getItemId(), item.getItemName(), item.getStackSize(), item.getVendorPrice(), item.getItemLevel());
+        this.itemDescription = itemDescription;
     }
 
     public String getItemDescription() {
@@ -25,13 +20,5 @@ public class Consumable {
 
     public void setItemDescription(String itemDescription) {
         this.itemDescription = itemDescription;
-    }
-
-    public Item getItem() {
-        return item;
-    }
-
-    public void setItem(Item item) {
-        this.item = item;
     }
 }
