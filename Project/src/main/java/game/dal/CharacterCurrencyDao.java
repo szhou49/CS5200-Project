@@ -1,170 +1,142 @@
 package game.dal;
 
+import game.model.Character;
+import game.model.CharacterCurrency;
+import game.model.Currency;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import game.model.CharacterCurrency;
-import game.model.Currency;
-import game.model.Character;
-
 public class CharacterCurrencyDao {
-    private ConnectionManager connectionManager;
-    private CharacterDao characterDao;
-    private CurrencyDao currencyDao;
+    protected ConnectionManager connectionManager;
+
     private static CharacterCurrencyDao instance = null;
-    
-    private CharacterCurrencyDao() {
+
+    protected CharacterCurrencyDao() {
         connectionManager = new ConnectionManager();
-        characterDao = CharacterDao.getInstance();
-        currencyDao = CurrencyDao.getInstance();
     }
-    
+
     public static CharacterCurrencyDao getInstance() {
-		if(instance == null) {
-			instance = new CharacterCurrencyDao();
-		}
-		return instance;
-	}
-    
-    // Create
+        if (instance == null) {
+            instance = new CharacterCurrencyDao();
+        }
+        return instance;
+    }
+
+    // Create a new CharacterCurrency
     public CharacterCurrency create(CharacterCurrency characterCurrency) throws SQLException {
-        // Verify that both character and currency exist
-        Character character = characterDao.getCharacterById(characterCurrency.getCharacterId());
-        if (character == null) {
-            throw new SQLException("Character with ID " + characterCurrency.getCharacterId() + " does not exist");
-        }
-        
-        Currency currency = currencyDao.getCurrencyByName(characterCurrency.getCurrencyId());
-        if (currency == null) {
-            throw new SQLException("Currency " + characterCurrency.getCurrencyId() + " does not exist");
-        }
-        
-        String insertSql = "INSERT INTO CharacterCurrency(character_id, currency_id, weekly_cap, amount) " +
-                          "VALUES(?,?,?,?);";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+        String insertCharacterCurrency = "INSERT INTO CharacterCurrency(character_id, currency_id, weekly_cap, amount) VALUES(?, ?, ?, ?);";
+        Connection connection = null;
+        PreparedStatement insertStmt = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(insertSql);
-            pstmt.setInt(1, characterCurrency.getCharacterId());
-            pstmt.setString(2, characterCurrency.getCurrencyId());
-            pstmt.setInt(3, characterCurrency.getWeeklyCap());
-            pstmt.setInt(4, characterCurrency.getAmount());
-            pstmt.executeUpdate();
-            
-            characterCurrency.setCharacter(character);
-            characterCurrency.setCurrency(currency);
-            
+            connection = connectionManager.getConnection();
+            insertStmt = connection.prepareStatement(insertCharacterCurrency);
+            insertStmt.setInt(1, characterCurrency.getCharacter().getCharacterId());
+            insertStmt.setString(2, characterCurrency.getCurrency().getCurrencyName());
+            insertStmt.setInt(3, characterCurrency.getWeeklyCap());
+            insertStmt.setInt(4, characterCurrency.getAmount());
+            insertStmt.executeUpdate();
             return characterCurrency;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) connection.close();
+            if (insertStmt != null) insertStmt.close();
         }
     }
-    
-    // Read by compound primary key
+
+    // Retrieve a CharacterCurrency by character_id and currency_id
     public CharacterCurrency getCharacterCurrency(int characterId, String currencyId) throws SQLException {
-        String selectSql = "SELECT character_id, currency_id, weekly_cap, amount " +
-                          "FROM CharacterCurrency WHERE character_id=? AND currency_id=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        String selectCharacterCurrency = "SELECT character_id, currency_id, weekly_cap, amount FROM CharacterCurrency WHERE character_id = ? AND currency_id = ?;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            pstmt.setInt(1, characterId);
-            pstmt.setString(2, currencyId);
-            rs = pstmt.executeQuery();
-            if(rs.next()) {
-                CharacterCurrency cc = new CharacterCurrency(
-                    rs.getInt("character_id"),
-                    rs.getString("currency_id"),
-                    rs.getInt("weekly_cap"),
-                    rs.getInt("amount")
-                );
-                cc.setCharacter(characterDao.getCharacterById(characterId));
-                cc.setCurrency(currencyDao.getCurrencyByName(currencyId));
-                return cc;
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectCharacterCurrency);
+            selectStmt.setInt(1, characterId);
+            selectStmt.setString(2, currencyId);
+            results = selectStmt.executeQuery();
+            if (results.next()) {
+                int weeklyCap = results.getInt("weekly_cap");
+                int amount = results.getInt("amount");
+
+                CharacterDao characterDao = CharacterDao.getInstance();
+                CurrencyDao currencyDao = CurrencyDao.getInstance();
+
+                Character character = characterDao.getCharacterById(characterId);
+                Currency currency = currencyDao.getCurrencyByName(currencyId);
+
+                return new CharacterCurrency(weeklyCap, amount, character, currency);
             }
-            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) connection.close();
+            if (selectStmt != null) selectStmt.close();
+            if (results != null) results.close();
         }
+        return null;
     }
-    
-    // Get all currencies for a character
-    public List<CharacterCurrency> getCurrenciesByCharacter(int characterId) throws SQLException {
+
+    // Retrieve all CharacterCurrency records for a specific character_id
+    public List<CharacterCurrency> getCharacterCurrenciesByCharacterId(int characterId) throws SQLException {
         List<CharacterCurrency> characterCurrencies = new ArrayList<>();
-        String selectSql = "SELECT character_id, currency_id, weekly_cap, amount " +
-                          "FROM CharacterCurrency WHERE character_id=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        String selectCharacterCurrencies = "SELECT character_id, currency_id, weekly_cap, amount FROM CharacterCurrency WHERE character_id = ?;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            pstmt.setInt(1, characterId);
-            rs = pstmt.executeQuery();
-            
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectCharacterCurrencies);
+            selectStmt.setInt(1, characterId);
+            results = selectStmt.executeQuery();
+
+            CharacterDao characterDao = CharacterDao.getInstance();
+            CurrencyDao currencyDao = CurrencyDao.getInstance();
+
             Character character = characterDao.getCharacterById(characterId);
-            
-            while(rs.next()) {
-                CharacterCurrency cc = new CharacterCurrency(
-                    rs.getInt("character_id"),
-                    rs.getString("currency_id"),
-                    rs.getInt("weekly_cap"),
-                    rs.getInt("amount")
-                );
-                cc.setCharacter(character);
-                cc.setCurrency(currencyDao.getCurrencyByName(cc.getCurrencyId()));
-                characterCurrencies.add(cc);
+
+            while (results.next()) {
+                String currencyId = results.getString("currency_id");
+                int weeklyCap = results.getInt("weekly_cap");
+                int amount = results.getInt("amount");
+
+                Currency currency = currencyDao.getCurrencyByName(currencyId);
+                characterCurrencies.add(new CharacterCurrency(weeklyCap, amount, character, currency));
             }
-            return characterCurrencies;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) connection.close();
+            if (selectStmt != null) selectStmt.close();
+            if (results != null) results.close();
         }
+        return characterCurrencies;
     }
-    
-    // Update amount
-    public CharacterCurrency updateAmount(CharacterCurrency characterCurrency, int newAmount) throws SQLException {
-        String updateSql = "UPDATE CharacterCurrency SET amount=? WHERE character_id=? AND currency_id=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+
+    // Delete a CharacterCurrency by character_id and currency_id
+    public CharacterCurrency delete(CharacterCurrency characterCurrency) throws SQLException {
+        String deleteCharacterCurrency = "DELETE FROM CharacterCurrency WHERE character_id = ? AND currency_id = ?;";
+        Connection connection = null;
+        PreparedStatement deleteStmt = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(updateSql);
-            pstmt.setInt(1, newAmount);
-            pstmt.setInt(2, characterCurrency.getCharacterId());
-            pstmt.setString(3, characterCurrency.getCurrencyId());
-            pstmt.executeUpdate();
-            
-            characterCurrency.setAmount(newAmount);
-            return characterCurrency;
+            connection = connectionManager.getConnection();
+            deleteStmt = connection.prepareStatement(deleteCharacterCurrency);
+            deleteStmt.setInt(1, characterCurrency.getCharacter().getCharacterId());
+            deleteStmt.setString(2, characterCurrency.getCurrency().getCurrencyName());
+            deleteStmt.executeUpdate();
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) connection.close();
+            if (deleteStmt != null) deleteStmt.close();
         }
     }
-    
-    // Delete
-    public void delete(CharacterCurrency characterCurrency) throws SQLException {
-        String deleteSql = "DELETE FROM CharacterCurrency WHERE character_id=? AND currency_id=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(deleteSql);
-            pstmt.setInt(1, characterCurrency.getCharacterId());
-            pstmt.setString(2, characterCurrency.getCurrencyId());
-            pstmt.executeUpdate();
-        } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
-        }
-    }
-} 
+}

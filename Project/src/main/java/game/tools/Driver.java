@@ -24,8 +24,10 @@ import game.model.Currency;
 
 public class Driver {
     public static void main(String[] args) {
+        /* 
         try {
             // Initialize DAOs
+            
             PlayerDao playerDao = PlayerDao.getInstance();
             ItemDao itemDao = ItemDao.getInstance();
             WeaponDao weaponDao = WeaponDao.getInstance();
@@ -42,15 +44,14 @@ public class Driver {
             System.out.println("Created player: " + player.getPlayerName());
             
             // Create an item and weapon for main hand
-            Item weaponItem = new Item(null, "Test Sword", 1, 1000, 50);
+            Item weaponItem = new Item(1, "Test Sword", 1, 1000, 50);
             weaponItem = itemDao.create(weaponItem);
             Weapon weapon = new Weapon(weaponItem.getItemId(), 50, 100, 2.5, 2.8, weaponItem);
             weapon = weaponDao.create(weapon);
             System.out.println("Created weapon: " + weapon.getItem().getItemName());
             
             // Create a character
-            Character character = new Character(null, "Test", "Character", 
-                                             player.getEmailAddress(), weapon.getItemId());
+            Character character = new Character(1, "Test", "Character", player, weapon);
             character = characterDao.create(character);
             System.out.println("Created character: " + character.getFirstName() + " " + 
                              character.getLastName());
@@ -69,9 +70,7 @@ public class Driver {
             System.out.println("Created job: " + job.getJobName());
             
             // Assign job to character
-            CharacterJob characterJob = new CharacterJob(
-                character.getCharacterId(), job.getJobName(), 1, 0, 1000
-            );
+            CharacterJob characterJob = new CharacterJob(1, 0, 1000, character, job);
             characterJob = characterJobDao.create(characterJob);
             System.out.println("Assigned job to character");
             
@@ -81,9 +80,7 @@ public class Driver {
             System.out.println("Created currency: " + currency.getCurrencyName());
             
             // Assign currency to character
-            CharacterCurrency characterCurrency = new CharacterCurrency(
-                character.getCharacterId(), currency.getCurrencyName(), 0, 1000
-            );
+            CharacterCurrency characterCurrency = new CharacterCurrency(0, 1000, character, currency);
             characterCurrency = characterCurrencyDao.create(characterCurrency);
             System.out.println("Assigned currency to character");
             
@@ -116,8 +113,10 @@ public class Driver {
             playerDao.delete(player);
             System.out.println("Cleanup complete");
             
+            
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        */
     }
 } 
