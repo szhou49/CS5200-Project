@@ -1,178 +1,141 @@
 package game.dal;
+
+import game.model.Character;
+import game.model.CharacterJob;
+import game.model.Job;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import game.model.CharacterJob;
-import game.model.Job;
-import game.model.Character;
-
 public class CharacterJobDao {
-    private ConnectionManager connectionManager;
-    private CharacterDao characterDao;
-    private JobDao jobDao;
-    private static CharacterJobDao instance = null; 
-    
-    private CharacterJobDao() {
+    protected ConnectionManager connectionManager;
+
+    private static CharacterJobDao instance = null;
+
+    protected CharacterJobDao() {
         connectionManager = new ConnectionManager();
-        characterDao = CharacterDao.getInstance();
-        jobDao = JobDao.getInstance();
     }
-    
+
     public static CharacterJobDao getInstance() {
- 		if(instance == null) {
- 			instance = new CharacterJobDao();
- 		}
- 		return instance;
- 	}
-    
-    // Create
+        if (instance == null) {
+            instance = new CharacterJobDao();
+        }
+        return instance;
+    }
+
+    // Create a new CharacterJob
     public CharacterJob create(CharacterJob characterJob) throws SQLException {
-        // Verify that both character and job exist
-        Character character = characterDao.getCharacterById(characterJob.getCharacterId());
-        if (character == null) {
-            throw new SQLException("Character with ID " + characterJob.getCharacterId() + " does not exist");
-        }
-        
-        Job job = jobDao.getJobByName(characterJob.getJobName());
-        if (job == null) {
-            throw new SQLException("Job " + characterJob.getJobName() + " does not exist");
-        }
-        
-        String insertSql = "INSERT INTO CharacterJob(character_id, job_name, job_level, current_exp, threshold) " +
-                          "VALUES(?,?,?,?,?);";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+        String insertCharacterJob = "INSERT INTO CharacterJob(character_id, job_name, job_level, current_exp, threshold) VALUES(?, ?, ?, ?, ?);";
+        Connection connection = null;
+        PreparedStatement insertStmt = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(insertSql);
-            pstmt.setInt(1, characterJob.getCharacterId());
-            pstmt.setString(2, characterJob.getJobName());
-            pstmt.setInt(3, characterJob.getJobLevel());
-            pstmt.setInt(4, characterJob.getCurrentExp());
-            pstmt.setInt(5, characterJob.getThreshold());
-            pstmt.executeUpdate();
-            
-            characterJob.setCharacter(character);
-            characterJob.setJob(job);
-            
+            connection = connectionManager.getConnection();
+            insertStmt = connection.prepareStatement(insertCharacterJob);
+            insertStmt.setInt(1, characterJob.getCharacter().getCharacterId());
+            insertStmt.setString(2, characterJob.getJob().getJobName());
+            insertStmt.executeUpdate();
             return characterJob;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) connection.close();
+            if (insertStmt != null) insertStmt.close();
         }
     }
-    
-    // Read by compound primary key
+
+    // Retrieve a CharacterJob by character_id and job_name
     public CharacterJob getCharacterJob(int characterId, String jobName) throws SQLException {
-        String selectSql = "SELECT character_id, job_name, job_level, current_exp, threshold " +
-                          "FROM CharacterJob WHERE character_id=? AND job_name=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        String selectCharacterJob = "SELECT character_id, job_name, job_level, current_exp, threshold FROM CharacterJob WHERE character_id = ? AND job_name = ?;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            pstmt.setInt(1, characterId);
-            pstmt.setString(2, jobName);
-            rs = pstmt.executeQuery();
-            if(rs.next()) {
-                CharacterJob cj = new CharacterJob(
-                    rs.getInt("character_id"),
-                    rs.getString("job_name"),
-                    rs.getInt("job_level"),
-                    rs.getInt("current_exp"),
-                    rs.getInt("threshold")
-                );
-                cj.setCharacter(characterDao.getCharacterById(characterId));
-                cj.setJob(jobDao.getJobByName(jobName));
-                return cj;
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectCharacterJob);
+            selectStmt.setInt(1, characterId);
+            selectStmt.setString(2, jobName);
+            results = selectStmt.executeQuery();
+            if (results.next()) {
+                int jobLevel = results.getInt("job_level");
+                int currentExp = results.getInt("current_exp");
+                int threshold = results.getInt("threshold");
+
+                CharacterDao characterDao = CharacterDao.getInstance();
+                JobDao jobDao = JobDao.getInstance();
+
+                Character character = characterDao.getCharacterById(characterId);
+                Job job = jobDao.getJobByName(jobName);
+
+                return new CharacterJob(jobLevel, currentExp, threshold, character, job);
             }
-            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) connection.close();
+            if (selectStmt != null) selectStmt.close();
+            if (results != null) results.close();
         }
+        return null;
     }
-    
-    // Get all jobs for a character
-    public List<CharacterJob> getJobsByCharacter(int characterId) throws SQLException {
+
+    // Retrieve all CharacterJobs for a specific character_id
+    public List<CharacterJob> getCharacterJobsByCharacterId(int characterId) throws SQLException {
         List<CharacterJob> characterJobs = new ArrayList<>();
-        String selectSql = "SELECT character_id, job_name, job_level, current_exp, threshold " +
-                          "FROM CharacterJob WHERE character_id=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        String selectCharacterJobs = "SELECT character_id, job_name, job_level, current_exp, threshold FROM CharacterJob WHERE character_id = ?;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            pstmt.setInt(1, characterId);
-            rs = pstmt.executeQuery();
-            
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectCharacterJobs);
+            selectStmt.setInt(1, characterId);
+            results = selectStmt.executeQuery();
+
+            CharacterDao characterDao = CharacterDao.getInstance();
+            JobDao jobDao = JobDao.getInstance();
             Character character = characterDao.getCharacterById(characterId);
-            
-            while(rs.next()) {
-                CharacterJob cj = new CharacterJob(
-                    rs.getInt("character_id"),
-                    rs.getString("job_name"),
-                    rs.getInt("job_level"),
-                    rs.getInt("current_exp"),
-                    rs.getInt("threshold")
-                );
-                cj.setCharacter(character);
-                cj.setJob(jobDao.getJobByName(cj.getJobName()));
-                characterJobs.add(cj);
+
+            while (results.next()) {
+                String jobName = results.getString("job_name");
+                int jobLevel = results.getInt("job_level");
+                int currentExp = results.getInt("current_exp");
+                int threshold = results.getInt("threshold");
+
+                Job job = jobDao.getJobByName(jobName);
+                characterJobs.add(new CharacterJob(jobLevel, currentExp, threshold, character, job));
             }
-            return characterJobs;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) connection.close();
+            if (selectStmt != null) selectStmt.close();
+            if (results != null) results.close();
         }
+        return characterJobs;
     }
-    
-    // Update job level and exp
-    public CharacterJob updateLevelAndExp(CharacterJob characterJob, 
-                                        int newLevel, int newExp, int newThreshold) throws SQLException {
-        String updateSql = "UPDATE CharacterJob SET job_level=?, current_exp=?, threshold=? " +
-                          "WHERE character_id=? AND job_name=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+
+    // Delete a CharacterJob
+    public CharacterJob delete(CharacterJob characterJob) throws SQLException {
+        String deleteCharacterJob = "DELETE FROM CharacterJob WHERE character_id = ? AND job_name = ?;";
+        Connection connection = null;
+        PreparedStatement deleteStmt = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(updateSql);
-            pstmt.setInt(1, newLevel);
-            pstmt.setInt(2, newExp);
-            pstmt.setInt(3, newThreshold);
-            pstmt.setInt(4, characterJob.getCharacterId());
-            pstmt.setString(5, characterJob.getJobName());
-            pstmt.executeUpdate();
-            
-            characterJob.setJobLevel(newLevel);
-            characterJob.setCurrentExp(newExp);
-            characterJob.setThreshold(newThreshold);
-            return characterJob;
+            connection = connectionManager.getConnection();
+            deleteStmt = connection.prepareStatement(deleteCharacterJob);
+            deleteStmt.setInt(1, characterJob.getCharacter().getCharacterId());
+            deleteStmt.setString(2, characterJob.getJob().getJobName());
+            deleteStmt.executeUpdate();
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) connection.close();
+            if (deleteStmt != null) deleteStmt.close();
         }
     }
-    
-    // Delete
-    public void delete(CharacterJob characterJob) throws SQLException {
-        String deleteSql = "DELETE FROM CharacterJob WHERE character_id=? AND job_name=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(deleteSql);
-            pstmt.setInt(1, characterJob.getCharacterId());
-            pstmt.setString(2, characterJob.getJobName());
-            pstmt.executeUpdate();
-        } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
-        }
-    }
-} 
+}

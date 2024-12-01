@@ -62,7 +62,7 @@ public class SlotCreate extends HttpServlet {
                     messages.put("success", "Item with ID " + itemId + " does not exist.");
                 } else {
                     // Create the slot
-                    Slot slot = new Slot(characterId, slotIndex, itemId, quantity);
+                    Slot slot = new Slot(slotIndex, quantity, character, item);
                     slotDao.create(slot);
 
                     messages.put("success", "Successfully created slot for character ID: " + characterId + " and item ID: " + itemId);

@@ -3,6 +3,7 @@ package game.servlet;
 import game.dal.*;
 import game.model.*;
 import game.model.Character;
+import game.model.EquippedSlot.SlotEnum;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,12 +20,14 @@ public class EquippedSlotCreate extends HttpServlet {
 
     private CharacterDao characterDao;
     private GearDao gearDao;
+    private SlotDao slotDao;
     private EquippedSlotDao equippedSlotDao;
 
     @Override
     public void init() throws ServletException {
         characterDao = CharacterDao.getInstance();
         gearDao = GearDao.getInstance();
+        slotDao = SlotDao.getInstance();
         equippedSlotDao = EquippedSlotDao.getInstance();
     }
     
@@ -44,22 +47,33 @@ public class EquippedSlotCreate extends HttpServlet {
         try {
             int characterId = Integer.parseInt(request.getParameter("characterId"));
             int itemId = Integer.parseInt(request.getParameter("itemId"));
-            String slot = request.getParameter("slot");
+            String slotName = request.getParameter("slot"); // read body slot
 
+            // validate and parse the slot
+            SlotEnum slotEnum;
+            try {
+                slotEnum = SlotEnum.valueOf(slotName.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                messages.put("success", "Invalid slot value: " + slotName);
+                request.getRequestDispatcher("/EquipSlotCreate.jsp").forward(request, response);
+                return;
+            }
+            
+            
             Character character = characterDao.getCharacterById(characterId);
             if (character == null) {
                 messages.put("success", "Character with ID " + characterId + " does not exist.");
-            } else {
-                Gear gear = gearDao.getGearByItemId(itemId);
-                if (gear == null) {
-                    messages.put("success", "Gear with ID " + itemId + " does not exist.");
-                } else {
-                    EquippedSlot equippedSlot = new EquippedSlot(characterId, itemId, slot);
-                    equippedSlotDao.create(equippedSlot);
-
-                    messages.put("success", "Successfully equipped gear in slot: " + slot + " for character ID: " + characterId);
-                }
             }
+            
+            Gear gear = gearDao.getGearByItemId(itemId);
+            if (gear == null) {
+                messages.put("success", "gear with ID " + itemId + " does not exist.");
+            }
+            
+            EquippedSlot equippedSlot = new EquippedSlot(slotEnum, character, gear);
+            equippedSlotDao.create(equippedSlot);
+
+            
         } catch (NumberFormatException e) {
             messages.put("success", "Invalid number format. Please check your inputs.");
         } catch (SQLException e) {

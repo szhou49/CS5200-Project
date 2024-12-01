@@ -8,9 +8,11 @@ import game.model.Player;
 public class PlayerDao {
     private ConnectionManager connectionManager;
     private static PlayerDao instance = null;
+
     private PlayerDao() {
         connectionManager = new ConnectionManager();
     }
+
     public static PlayerDao getInstance() {
 		if(instance == null) {
 			instance = new PlayerDao();
@@ -30,6 +32,9 @@ public class PlayerDao {
             pstmt.setString(2, player.getPlayerName());
             pstmt.executeUpdate();
             return player;
+        } catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
         } finally {
             if(pstmt != null) pstmt.close();
             if(conn != null) conn.close();
@@ -53,12 +58,15 @@ public class PlayerDao {
                     rs.getString("player_name")
                 );
             }
-            return null;
-        } finally {
+        } catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		} finally {
             if(rs != null) rs.close();
             if(pstmt != null) pstmt.close();
             if(conn != null) conn.close();
         }
+        return null;
     }
     
     // Example of search method returning a list
@@ -86,7 +94,32 @@ public class PlayerDao {
             if(conn != null) conn.close();
         }
     }
-    
+
+    // Get all players
+    public List<Player> getAllPlayers() throws SQLException {
+        List<Player> players = new ArrayList<>();
+        String selectSql = "SELECT email_address, player_name FROM Player;";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = connectionManager.getConnection();
+            pstmt = conn.prepareStatement(selectSql);
+            rs = pstmt.executeQuery();
+            while(rs.next()) {
+                players.add(new Player(
+                    rs.getString("email_address"),
+                    rs.getString("player_name")
+                ));
+            }
+            return players;
+        } finally {
+            if(rs != null) rs.close();
+            if(pstmt != null) pstmt.close();
+            if(conn != null) conn.close();
+        }
+    }
+
     // Update
     public Player updatePlayerName(Player player, String newName) throws SQLException {
         String updateSql = "UPDATE Player SET player_name=? WHERE email_address=?;";

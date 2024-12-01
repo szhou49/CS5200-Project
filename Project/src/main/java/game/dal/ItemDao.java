@@ -6,168 +6,150 @@ import java.util.List;
 import game.model.Item;
 
 public class ItemDao {
-    private ConnectionManager connectionManager;
+    protected ConnectionManager connectionManager;
+
     private static ItemDao instance = null;
-    private ItemDao() {
+
+    protected ItemDao() {
         connectionManager = new ConnectionManager();
     }
+
     public static ItemDao getInstance() {
-		if(instance == null) {
-			instance = new ItemDao();
-		}
-		return instance;
-	}
-    
-    
-    // Create
+        if (instance == null) {
+            instance = new ItemDao();
+        }
+        return instance;
+    }
+
+    // Create a new Item
     public Item create(Item item) throws SQLException {
-        String insertSql = "INSERT INTO Item(item_name, stack_size, vendor_price, item_level) " +
-                          "VALUES(?,?,?,?);";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        String insertItem = "INSERT INTO Item(item_name, stack_size, vendor_price, item_level) VALUES(?, ?, ?, ?);";
+        Connection connection = null;
+        PreparedStatement insertStmt = null;
+        ResultSet resultKey = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, item.getItemName());
-            pstmt.setInt(2, item.getStackSize());
-            pstmt.setInt(3, item.getVendorPrice());
-            pstmt.setInt(4, item.getItemLevel());
-            pstmt.executeUpdate();
-            
-            // Retrieve the auto-generated item_id
-            rs = pstmt.getGeneratedKeys();
-            if(rs.next()) {
-                item.setItemId(rs.getInt(1));
+            connection = connectionManager.getConnection();
+            insertStmt = connection.prepareStatement(insertItem, Statement.RETURN_GENERATED_KEYS);
+            insertStmt.setString(1, item.getItemName());
+            insertStmt.setInt(2, item.getStackSize());
+            insertStmt.setInt(3, item.getVendorPrice());
+            insertStmt.setInt(4, item.getItemLevel());
+            insertStmt.executeUpdate();
+
+            // Get the auto-generated itemId
+            resultKey = insertStmt.getGeneratedKeys();
+            if (resultKey.next()) {
+                item.setItemId(resultKey.getInt(1));
             }
             return item;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
-        }
-    }
-    
-    // Read by primary key
-    public Item getItemById(int itemId) throws SQLException {
-        String selectSql = "SELECT item_id, item_name, stack_size, vendor_price, item_level " +
-                          "FROM Item WHERE item_id=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            pstmt.setInt(1, itemId);
-            rs = pstmt.executeQuery();
-            if(rs.next()) {
-                return new Item(
-                    rs.getInt("item_id"),
-                    rs.getString("item_name"),
-                    rs.getInt("stack_size"),
-                    rs.getInt("vendor_price"),
-                    rs.getInt("item_level")
-                );
+            if (connection != null) {
+                connection.close();
             }
-            return null;
-        } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
-        }
-    }
-    
-    // Search by partial name
-    public List<Item> getItemsByPartialName(String partialName) throws SQLException {
-        List<Item> items = new ArrayList<>();
-        String selectSql = "SELECT item_id, item_name, stack_size, vendor_price, item_level " +
-                          "FROM Item WHERE item_name LIKE ?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            pstmt.setString(1, "%" + partialName + "%");
-            rs = pstmt.executeQuery();
-            while(rs.next()) {
-                items.add(new Item(
-                    rs.getInt("item_id"),
-                    rs.getString("item_name"),
-                    rs.getInt("stack_size"),
-                    rs.getInt("vendor_price"),
-                    rs.getInt("item_level")
-                ));
+            if (insertStmt != null) {
+                insertStmt.close();
             }
-            return items;
-        } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (resultKey != null) {
+                resultKey.close();
+            }
         }
     }
 
-    // Get all item
+    // Retrieve an Item by itemId
+    public Item getItemById(int itemId) throws SQLException {
+        String selectItem = "SELECT item_id, item_name, stack_size, vendor_price, item_level FROM Item WHERE item_id = ?;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
+        try {
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectItem);
+            selectStmt.setInt(1, itemId);
+            results = selectStmt.executeQuery();
+            if (results.next()) {
+                String itemName = results.getString("item_name");
+                int stackSize = results.getInt("stack_size");
+                int vendorPrice = results.getInt("vendor_price");
+                int itemLevel = results.getInt("item_level");
+                return new Item(itemId, itemName, stackSize, vendorPrice, itemLevel);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+            if (selectStmt != null) {
+                selectStmt.close();
+            }
+            if (results != null) {
+                results.close();
+            }
+        }
+        return null;
+    }
+
+    // Retrieve all Items
     public List<Item> getItems() throws SQLException {
         List<Item> items = new ArrayList<>();
-        String selectSql = "SELECT item_id, item_name, stack_size, vendor_price, item_level " +
-                          "FROM Item;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        String selectItems = "SELECT item_id, item_name, stack_size, vendor_price, item_level FROM Item;";
+        Connection connection = null;
+        PreparedStatement selectStmt = null;
+        ResultSet results = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(selectSql);
-            rs = pstmt.executeQuery();
-            while(rs.next()) {
-                items.add(new Item(
-                    rs.getInt("item_id"),
-                    rs.getString("item_name"),
-                    rs.getInt("stack_size"),
-                    rs.getInt("vendor_price"),
-                    rs.getInt("item_level")
-                ));
+            connection = connectionManager.getConnection();
+            selectStmt = connection.prepareStatement(selectItems);
+            results = selectStmt.executeQuery();
+            while (results.next()) {
+                int itemId = results.getInt("item_id");
+                String itemName = results.getString("item_name");
+                int stackSize = results.getInt("stack_size");
+                int vendorPrice = results.getInt("vendor_price");
+                int itemLevel = results.getInt("item_level");
+                items.add(new Item(itemId, itemName, stackSize, vendorPrice, itemLevel));
             }
-            return items;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(rs != null) rs.close();
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) {
+                connection.close();
+            }
+            if (selectStmt != null) {
+                selectStmt.close();
+            }
+            if (results != null) {
+                results.close();
+            }
         }
+        return items;
     }
-    
-    // Update vendor price
-    public Item updateVendorPrice(Item item, int newVendorPrice) throws SQLException {
-        String updateSql = "UPDATE Item SET vendor_price=? WHERE item_id=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+
+    // Delete an Item
+    public Item delete(Item item) throws SQLException {
+        String deleteItem = "DELETE FROM Item WHERE item_id = ?;";
+        Connection connection = null;
+        PreparedStatement deleteStmt = null;
         try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(updateSql);
-            pstmt.setInt(1, newVendorPrice);
-            pstmt.setInt(2, item.getItemId());
-            pstmt.executeUpdate();
-            item.setVendorPrice(newVendorPrice);
-            return item;
+            connection = connectionManager.getConnection();
+            deleteStmt = connection.prepareStatement(deleteItem);
+            deleteStmt.setInt(1, item.getItemId());
+            deleteStmt.executeUpdate();
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
+            if (connection != null) {
+                connection.close();
+            }
+            if (deleteStmt != null) {
+                deleteStmt.close();
+            }
         }
     }
-    
-    // Delete
-    public void delete(Item item) throws SQLException {
-        String deleteSql = "DELETE FROM Item WHERE item_id=?;";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        try {
-            conn = connectionManager.getConnection();
-            pstmt = conn.prepareStatement(deleteSql);
-            pstmt.setInt(1, item.getItemId());
-            pstmt.executeUpdate();
-        } finally {
-            if(pstmt != null) pstmt.close();
-            if(conn != null) conn.close();
-        }
-    }
-} 
+}

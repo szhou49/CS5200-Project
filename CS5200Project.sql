@@ -84,7 +84,7 @@ CREATE TABLE GearAttributeBonus (
     FOREIGN KEY (item_id) REFERENCES Gear(item_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE ConsumableBonus (
+CREATE TABLE ConsumableAttributeBonus (
     item_id INT NOT NULL,
     attribute VARCHAR(50) NOT NULL,
     percentage_value DECIMAL(5,2) NOT NULL,

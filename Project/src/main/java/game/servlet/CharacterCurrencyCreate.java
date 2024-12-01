@@ -55,7 +55,7 @@ public class CharacterCurrencyCreate extends HttpServlet {
                 if (currency == null) {
                     messages.put("success", "Currency " + currencyId + " does not exist.");
                 } else {
-                    CharacterCurrency characterCurrency = new CharacterCurrency(characterId, currencyId, weeklyCap, amount);
+                    CharacterCurrency characterCurrency = new CharacterCurrency(weeklyCap, amount, character, currency);
                     characterCurrencyDao.create(characterCurrency);
                     messages.put("success", "Successfully created CharacterCurrency for character ID: " + characterId + " and currency: " + currencyId);
                 }

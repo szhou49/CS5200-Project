@@ -1,9 +1,9 @@
 package game.servlet;
 
+import game.dal.ConsumableDao;
 import game.dal.ItemDao;
-import game.dal.WeaponDao;
+import game.model.Consumable;
 import game.model.Item;
-import game.model.Weapon;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,26 +15,25 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-@WebServlet("/weaponcreate")
-public class WeaponCreate extends HttpServlet {
+@WebServlet("/consumablecreate")
+public class ConsumableCreate extends HttpServlet {
 
     private ItemDao itemDao;
-    private WeaponDao weaponDao;
+    private ConsumableDao consumableDao;
 
     @Override
     public void init() throws ServletException {
         itemDao = ItemDao.getInstance();
-        weaponDao = WeaponDao.getInstance();
+        consumableDao = ConsumableDao.getInstance();
     }
     
     @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // Map for storing messages.
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Map<String, String> messages = new HashMap<>();
-        req.setAttribute("messages", messages);
+        request.setAttribute("messages", messages);
 
-        // Render the JSP page
-        req.getRequestDispatcher("/WeaponCreate.jsp").forward(req, resp);
+        messages.put("title", "Create Consumable");
+        request.getRequestDispatcher("/ConsumableCreate.jsp").forward(request, response);
     }
 
     @Override
@@ -44,26 +43,23 @@ public class WeaponCreate extends HttpServlet {
 
         try {
             int itemId = Integer.parseInt(request.getParameter("itemId"));
-            int requiredLevel = Integer.parseInt(request.getParameter("requiredLevel"));
-            int damage = Integer.parseInt(request.getParameter("damage"));
-            double autoAttack = Double.parseDouble(request.getParameter("autoAttack"));
-            double attackDelay = Double.parseDouble(request.getParameter("attackDelay"));
-            
+            String itemDescription = request.getParameter("itemDescription");
+
             Item existingItem = itemDao.getItemById(itemId);
             if (existingItem == null) {
                 messages.put("error", "Item with ID " + itemId + " does not exist.");
             } else {
-                Weapon weapon = new Weapon(existingItem, requiredLevel, damage, autoAttack, attackDelay);
-                weaponDao.create(weapon);
-                messages.put("success", "Successfully created weapon for item ID: " + itemId);
+                Consumable consumable = new Consumable(existingItem, itemDescription);
+                consumableDao.create(consumable);
+                messages.put("success", "Successfully created consumable for item ID: " + itemId);
             }
         } catch (NumberFormatException e) {
             messages.put("error", "Invalid number format. Please check your inputs.");
         } catch (SQLException e) {
             e.printStackTrace();
-            messages.put("error", "Database error: Unable to create weapon.");
+            messages.put("error", "Database error: Unable to create consumable.");
         }
 
-        request.getRequestDispatcher("/WeaponCreate.jsp").forward(request, response);
+        request.getRequestDispatcher("/ConsumableCreate.jsp").forward(request, response);
     }
 }

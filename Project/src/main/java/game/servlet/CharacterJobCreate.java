@@ -44,9 +44,6 @@ public class CharacterJobCreate extends HttpServlet {
         try {
             int characterId = Integer.parseInt(request.getParameter("characterId"));
             String jobName = request.getParameter("jobName");
-            int jobLevel = Integer.parseInt(request.getParameter("jobLevel"));
-            int currentExp = Integer.parseInt(request.getParameter("currentExp"));
-            int threshold = Integer.parseInt(request.getParameter("threshold"));
 
             Character character = characterDao.getCharacterById(characterId);
             if (character == null) {
@@ -56,7 +53,7 @@ public class CharacterJobCreate extends HttpServlet {
                 if (job == null) {
                     messages.put("error", "Job " + jobName + " does not exist.");
                 } else {
-                    CharacterJob characterJob = new CharacterJob(characterId, jobName, jobLevel, currentExp, threshold);
+                    CharacterJob characterJob = new CharacterJob(character, job);
                     characterJobDao.create(characterJob);
 
                     messages.put("success", "Successfully created CharacterJob for character ID: " + characterId + " and job: " + jobName);

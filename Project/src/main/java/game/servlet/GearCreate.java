@@ -53,7 +53,7 @@ public class GearCreate extends HttpServlet {
             if (existingItem == null) {
                 messages.put("error", "Item with ID " + itemId + " does not exist.");
             } else {
-                Gear gear = new Gear(itemId, equippedSlot, requiredLevel, defenseRating, magicDefenseRating, existingItem);
+                Gear gear = new Gear(existingItem, equippedSlot, requiredLevel, defenseRating, magicDefenseRating);
                 gearDao.create(gear);
                 messages.put("success", "Successfully created gear for item ID: " + itemId);
             }

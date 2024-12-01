@@ -10,14 +10,28 @@ public class Currency {
         this.cap = cap;
         this.isContinued = isContinued;
     }
-    
-    // Getters and setters
-    public String getCurrencyName() { return currencyName; }
-    public void setCurrencyName(String currencyName) { this.currencyName = currencyName; }
-    
-    public int getCap() { return cap; }
-    public void setCap(int cap) { this.cap = cap; }
-    
-    public boolean getIsContinued() { return isContinued; }
-    public void setIsContinued(boolean isContinued) { this.isContinued = isContinued; }
+
+    public String getCurrencyName() {
+        return currencyName;
+    }
+
+    public void setCurrencyName(String currencyName) {
+        this.currencyName = currencyName;
+    }
+
+    public int getCap() {
+        return cap;
+    }
+
+    public void setCap(int cap) {
+        this.cap = cap;
+    }
+
+    public boolean isContinued() {
+        return isContinued;
+    }
+
+    public void setContinued(boolean isContinued) {
+        this.isContinued = isContinued;
+    }
 } 

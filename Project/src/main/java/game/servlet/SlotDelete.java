@@ -44,7 +44,7 @@ public class SlotDelete extends HttpServlet {
             int slotIndex = Integer.parseInt(request.getParameter("slotIndex"));
 
             // Validate if the slot exists
-            Slot existingSlot = slotDao.getSlot(characterId, slotIndex);
+            Slot existingSlot = slotDao.getSlotByCharacterAndIndex(characterId, slotIndex);
             if (existingSlot == null) {
                 messages.put("success", "Slot for character ID " + characterId + " and slot index " + slotIndex + " does not exist.");
             } else {
