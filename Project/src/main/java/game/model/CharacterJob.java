@@ -7,10 +7,17 @@ public class CharacterJob {
     private Character character;
     private Job job;
     
+    // full initialization
     public CharacterJob(int jobLevel, int currentExp, int threshold, Character character, Job job) {
         this.jobLevel = jobLevel;
         this.currentExp = currentExp;
         this.threshold = threshold;
+        this.character = character;
+        this.job = job;
+    }
+    
+    // add new character job constructor for default initialization
+    public CharacterJob(Character character, Job job) {
         this.character = character;
         this.job = job;
     }

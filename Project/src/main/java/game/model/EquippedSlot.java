@@ -1,21 +1,21 @@
 package game.model;
 
 public class EquippedSlot {
-    private Slot slot;
+    private SlotEnum slot;
     private Character character;
     private Gear gear;
     
-    public EquippedSlot(Slot slot, Character character, Gear gear) {
-        this.slot = slot;
+    public EquippedSlot(SlotEnum bodySlot, Character character, Gear gear) {
+        this.slot = bodySlot;
         this.character = character;
         this.gear = gear;
     }
     
     // Getters and setters
-    public Slot getSlot() { 
+    public SlotEnum getSlot() { 
         return slot; 
     }
-    public void setSlot(Slot slot) { 
+    public void setSlot(SlotEnum slot) { 
         this.slot = slot; 
     }
     
@@ -34,7 +34,7 @@ public class EquippedSlot {
         this.gear = gear; 
     }
 
-    public enum Slot {
+    public enum SlotEnum {
         HEAD,
         BODY,
         HANDS,
