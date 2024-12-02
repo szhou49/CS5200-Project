@@ -2,6 +2,7 @@ package game.dal;
 
 import game.model.Character;
 import game.model.EquippedSlot;
+import game.model.EquippedSlot.SlotEnum;
 import game.model.Gear;
 
 import java.sql.*;
@@ -64,7 +65,7 @@ public class EquippedSlotDao {
                 CharacterDao characterDao = CharacterDao.getInstance();
                 Gear gear = gearDao.getGearByItemId(itemId);
                 Character character = characterDao.getCharacterById(characterId);
-                return new EquippedSlot(EquippedSlot.Slot.valueOf(slot), character, gear);
+                return new EquippedSlot(SlotEnum.valueOf(slot), character, gear);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -97,7 +98,7 @@ public class EquippedSlotDao {
                 int itemId = results.getInt("item_id");
                 String slot = results.getString("slot");
                 Gear gear = gearDao.getGearByItemId(itemId);
-                equippedSlots.add(new EquippedSlot(EquippedSlot.Slot.valueOf(slot), character, gear));
+                equippedSlots.add(new EquippedSlot(SlotEnum.valueOf(slot), character, gear));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -130,4 +131,5 @@ public class EquippedSlotDao {
             if (deleteStmt != null) deleteStmt.close();
         }
     }
+
 }

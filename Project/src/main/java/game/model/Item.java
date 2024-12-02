@@ -7,7 +7,7 @@ public class Item {
     private int vendorPrice;
     private int itemLevel;
     
-    public Item(int itemId, String itemName, int stackSize, int vendorPrice, int itemLevel) {
+    public Item(Integer itemId, String itemName, int stackSize, int vendorPrice, int itemLevel) {
         this.itemId = itemId;
         this.itemName = itemName;
         this.stackSize = stackSize;

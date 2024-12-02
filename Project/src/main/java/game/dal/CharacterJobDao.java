@@ -34,9 +34,6 @@ public class CharacterJobDao {
             insertStmt = connection.prepareStatement(insertCharacterJob);
             insertStmt.setInt(1, characterJob.getCharacter().getCharacterId());
             insertStmt.setString(2, characterJob.getJob().getJobName());
-            insertStmt.setInt(3, characterJob.getJobLevel());
-            insertStmt.setInt(4, characterJob.getCurrentExp());
-            insertStmt.setInt(5, characterJob.getThreshold());
             insertStmt.executeUpdate();
             return characterJob;
         } catch (SQLException e) {
