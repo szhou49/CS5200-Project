@@ -15,8 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet("/equippedslotget")
-public class EquippedSlotGet extends HttpServlet {
+@WebServlet("/equippedslotgetbycharacter")
+public class EquippedSlotGetByCharacter extends HttpServlet {
 
     protected EquippedSlotDao equippedSlotDao;
 

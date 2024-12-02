@@ -19,7 +19,7 @@ import java.util.Map;
  * CharacterCurrencyGet is a servlet to retrieve CharacterCurrency data.
  */
 @WebServlet("/characterurrencyget")
-public class CharacterCurrencyGet extends HttpServlet {
+public class CharacterCurrencyGetByCharacter extends HttpServlet {
 
     protected CharacterCurrencyDao characterCurrencyDao;
 
